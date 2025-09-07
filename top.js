@@ -10,22 +10,25 @@ style.innerHTML = `
   #topBtn {
     display: none;
     position: fixed;
-    bottom: 40px;
-    right: 40px;
+    bottom: 30px;
+    right: 30px;
     z-index: 99;
-    font-size: 18px;
+    width: 50px;
+    height: 50px;
     border: none;
     outline: none;
+    border-radius: 50%; /* 圆形 */
     background-color: #4CAF50;
     color: white;
+    font-size: 20px;
+    font-weight: bold;
     cursor: pointer;
-    padding: 12px 16px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    transition: 0.3s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
   }
   #topBtn:hover {
     background-color: #45a049;
+    transform: scale(1.1); /* 悬停时轻微放大 */
   }
 `;
 document.head.appendChild(style);
