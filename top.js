@@ -20,7 +20,7 @@ style.innerHTML = `
     border-radius: 50%; /* 圆形 */
     background-color: #4CAF50;
     color: white;
-    font-size: 20px;
+    font-size: 10px;
     font-weight: bold;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
