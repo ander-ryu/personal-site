@@ -1,48 +1,50 @@
-// 创建按钮元素
-const topBtn = document.createElement("button");
-topBtn.id = "topBtn";
-topBtn.innerText = "顶部";
-document.body.appendChild(topBtn);
+// 创建回到顶部按钮
+const topButton = document.createElement("div");
+topButton.innerHTML = "顶部";
+topButton.id = "backToTop";
+document.body.appendChild(topButton);
 
-// 按钮样式
+// 创建到底部按钮
+const bottomButton = document.createElement("div");
+bottomButton.innerHTML = "底部";
+bottomButton.id = "goToBottom";
+document.body.appendChild(bottomButton);
+
+// 样式
 const style = document.createElement("style");
 style.innerHTML = `
-  #topBtn {
-    display: none;
+  #backToTop, #goToBottom {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 99;
+    right: 20px;
     width: 50px;
     height: 50px;
-    border: none;
-    outline: none;
-    border-radius: 50%; /* 圆形 */
-    background-color: #4CAF50;
+    border-radius: 50%;
+    background-color: navy;
     color: white;
-    font-size: 13px;
-    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: all 0.3s ease;
+    opacity: 0.7;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 1000;
   }
-  #topBtn:hover {
-    background-color: #45a049;
-    transform: scale(1.1); /* 悬停时轻微放大 */
+  #backToTop:hover, #goToBottom:hover {
+    opacity: 1;
+    transform: scale(1.1);
   }
+  #backToTop { bottom: 80px; }  /* 顶部按钮在上 */
+  #goToBottom { bottom: 20px; } /* 底部按钮在下 */
 `;
 document.head.appendChild(style);
 
-// 滚动时显示/隐藏按钮
-window.onscroll = function() {
-  if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
-    topBtn.style.display = "block";
-  } else {
-    topBtn.style.display = "none";
-  }
-};
-
-// 点击按钮回到顶部
-topBtn.onclick = function() {
+// 点击事件：回到顶部
+topButton.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
-};
+});
+
+// 点击事件：到底部
+bottomButton.addEventListener("click", () => {
+  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+});
