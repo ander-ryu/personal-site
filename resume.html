@@ -7,19 +7,69 @@
     body { font-family: Arial, sans-serif; text-align: center; }
     nav a { margin: 0 15px; text-decoration: none; color: navy; }
     nav a:hover { text-decoration: underline; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f8f9fa;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+    }
+    th {
+      background: #4CAF50;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background: #f2f2f2;
+    }
   </style>
 </head>
 <body>
-  <h1>履历</h1>
+  <h1>个人履历</h1>
   <nav>
-      <a href="index.html">首页</a>
-      <a href="resume.html">履历</a>
-      <a href="previousProject.html">过去的项目</a>
-      <a href="futureProject.html">未来的兴趣</a>
+      <a href="index.html">网站首页</a>
+      <a href="resume.html">个人履历</a>
+      <a href="previousProject.html">过去项目</a>
+      <a href="futureProject.html">未来兴趣</a>
       <a href="contact.html">联系方式</a>
   </nav>
   <p>我认为生命的意思就是探索和体验这个世界的美好。</p>
-  <img src="./run.png" alt="run" width="400">
+  <table>
+    <tr>
+      <th>时间</th>
+      <th>经历</th>
+      <th>说明</th>
+    </tr>
+    <tr>
+      <td>2020 - 2024</td>
+      <td>XX大学 经济学 学士</td>
+      <td>主修公共经济与劳动经济</td>
+    </tr>
+    <tr>
+      <td>2024 - 至今</td>
+      <td>XX公司 Web开发工程师</td>
+      <td>负责前端开发与全栈学习</td>
+    </tr>
+    <tr>
+      <td>2025</td>
+      <td>个人项目</td>
+      <td>搭建个人简历与公司官网网站</td>
+    </tr>
+  </table>
+  <!-- <img src="./run.png" alt="run" width="400"> -->
   <p>换句话说，好奇心是生命中源源不断动力的来源，所以我愿意去尝试和学习各种新奇的知识和事物。</p>
   <p>不知不觉中，发现自己在这条路上已经走了很远了。</p>
 </body>
