@@ -1,7 +1,7 @@
 // 创建按钮元素
 const topBtn = document.createElement("button");
 topBtn.id = "topBtn";
-topBtn.innerText = "回到顶部";
+topBtn.innerText = "顶部";
 document.body.appendChild(topBtn);
 
 // 按钮样式
@@ -20,7 +20,7 @@ style.innerHTML = `
     border-radius: 50%; /* 圆形 */
     background-color: #4CAF50;
     color: white;
-    font-size: 10px;
+    font-size: 13px;
     font-weight: bold;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
