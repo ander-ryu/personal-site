@@ -1,7 +1,7 @@
 // 创建按钮元素
 const topBtn = document.createElement("button");
 topBtn.id = "topBtn";
-topBtn.innerText = "↑";
+topBtn.innerText = "回到顶部";
 document.body.appendChild(topBtn);
 
 // 按钮样式
