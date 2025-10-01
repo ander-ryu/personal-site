@@ -14,17 +14,15 @@
         fetch("/api/data")
             .then(res => res.json())
             .then(data => {
-                // 这里 data 是一个对象，例如 {title: "xxx", body: "yyy"}
-                let html = `
-      <h2>${data.title || "无标题"}</h2>
-      <p>${data.body || "无内容"}</p>
-    `;
+                let html = `<h2>${data.title || "无标题"}</h2>
+                  <p>${data.body || "无内容"}</p>`;
                 document.getElementById("content").innerHTML = html;
             })
             .catch(err => {
-                document.getElementById("content").innerText = "加载失败: " + err;
+                document.getElementById("content").innerText = "加载失败：" + err;
             });
     </script>
+
 
 </body>
 
