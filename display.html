@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>网站数据展示</title>
+</head>
+
+<body>
+    <h1>网站内容</h1>
+    <div id="content">加载中...</div>
+
+    <script>
+        fetch("/api/data")
+            .then(res => res.json())
+            .then(data => {
+                let html = "";
+                data.forEach(row => {
+                    html += `<p>${JSON.stringify(row)}</p>`;
+                });
+                document.getElementById("content").innerHTML = html;
+            })
+            .catch(err => {
+                document.getElementById("content").innerText = "加载失败：" + err;
+            });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>上传Excel</title>
+</head>
+
+<body>
+    <h1>上传新的 Excel 文件</h1>
+    <input type="file" id="fileInput" />
+    <button id="uploadBtn">上传</button>
+    <p id="status"></p>
+
+    <script>
+        document.getElementById("uploadBtn").addEventListener("click", async () => {
+            const fileInput = document.getElementById("fileInput");
+            if (!fileInput.files.length) {
+                alert("请选择一个 Excel 文件");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            try {
+                const res = await fetch("/api/upload", {
+                    method: "POST",
+                    body: fileInput.files[0], // 直接传文件
+                });
+
+                const result = await res.json();
+                document.getElementById("status").innerText = result.message || result.error;
+            } catch (err) {
+                document.getElementById("status").innerText = "上传失败：" + err;
+            }
+        });
+    </script>
+</body>
+
+</html>
