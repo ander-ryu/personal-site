@@ -14,6 +14,7 @@
         fetch("/api/data")
             .then(res => res.json())
             .then(data => {
+                console.log("API返回:", data); 
                 let html = `<h2>${data.title || "无标题"}</h2>
                   <p>${data.body || "无内容"}</p>`;
                 document.getElementById("content").innerHTML = html;
