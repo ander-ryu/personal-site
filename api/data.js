@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   try {
     const { data, error } = await supabase
       .from("personal-site-data")
-      .select("content")
+      .select("*")
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
