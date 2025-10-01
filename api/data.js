@@ -12,14 +12,14 @@ export default async function handler(req, res) {
 
     if (error) throw error;
 
-    // data 可能是 null 或 []
     if (!data || data.length === 0) {
       return res.status(200).json({ message: "no data" });
     }
 
+    // 返回第一条数据
     res.status(200).json(data[0].content);
+
   } catch (err) {
-    console.error("API Error:", err);
     res.status(500).json({ error: err.message });
   }
 }
