@@ -10,11 +10,12 @@ export default async function handler(req, res) {
       .select("content")
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 
-    res.status(200).json(data.content);
+    res.status(200).json(data?.content || { message: "no data" });
+    
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
