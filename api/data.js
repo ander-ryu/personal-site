@@ -1,21 +1,33 @@
-// /pages/api/data.js
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+// ✅ /pages/api/testConnection.js
+import { createClient } from '@supabase/supabase-js'
 
 export default async function handler(req, res) {
-  try {
-    const { data, error } = await supabase
-      .from("personal-site-data")
-      .select("content")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      // .single();
+  // 1️⃣ 从环境变量读取 Supabase 的连接信息
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  )
 
-    if (error) throw error;
+  // 2️⃣ 访问数据库（表名与 Supabase 控制台一致）
+  const { data, error } = await supabase
+    .from('personal-site-data') // ⚠️ 这里的表名要完全一致
+    .select('*')
+    .limit(2)
 
-    res.status(200).json(data.content);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  // 3️⃣ 输出结果
+  if (error) {
+    return res.status(400).json({
+      ok: false,
+      message: '❌ Supabase connection failed',
+      error,
+    })
   }
+
+  return res.status(200).json({
+    ok: true,
+    message: '✅ Supabase connection successful',
+    count: data.length,
+    data,
+  })
 }
+
