@@ -6,22 +6,28 @@
     <title>网站数据展示</title>
     <style>
         body {
-            font-family: "Microsoft YaHei", sans-serif;
-            padding: 20px;
+            font-family: "Microsoft Yahei", sans-serif;
+            margin: 40px;
+            line-height: 1.8;
         }
 
         .item {
+            margin-bottom: 40px;
             border-bottom: 1px solid #ccc;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
+            padding-bottom: 20px;
         }
 
         h2 {
-            color: #333;
+            color: #222;
         }
 
         p {
+            font-size: 16px;
             color: #555;
+        }
+
+        small {
+            color: #999;
         }
     </style>
 </head>
@@ -36,33 +42,41 @@
             .then(result => {
                 console.log("API返回:", result);
 
-                if (result.ok && result.data.length > 0) {
-                    // 循环生成所有记录
-                    let html = "";
-                    result.data.forEach(item => {
-                        const title = item.content?.title || "无标题";
-                        const body = item.content?.body || "无内容";
-                        const time = new Date(item.created_at).toLocaleString("zh-CN");
-
-                        html += `
-              <div class="item">
-                <h2>${title}</h2>
-                <p>${body}</p>
-                <small>创建时间：${time}</small>
-              </div>
-            `;
-                    });
-
-                    document.getElementById("content").innerHTML = html;
-                } else {
-                    document.getElementById("content").innerHTML = "暂无数据";
+                if (!result.data || result.data.length === 0) {
+                    document.getElementById("content").innerText = "暂无数据";
+                    return;
                 }
+
+                // 遍历所有数据
+                let html = "";
+                result.data.forEach(item => {
+                    const content = JSON.parse(item.content); // 解析 JSONB
+                    const formattedTime = new Intl.DateTimeFormat("zh-CN", {
+                        timeZone: "Asia/Tokyo", // 或 "Asia/Shanghai"
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: false
+                    }).format(new Date(item.created_at));
+
+                    html += `
+            <div class="item">
+              <h2>${content.title || "无标题"}</h2>
+              <p>${content.body || "无内容"}</p>
+              <small>创建时间：${formattedTime}</small>
+            </div>
+          `;
+                });
+
+                document.getElementById("content").innerHTML = html;
             })
             .catch(err => {
                 document.getElementById("content").innerText = "加载失败：" + err;
             });
     </script>
-
 </body>
 
 </html>
