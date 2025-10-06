@@ -50,9 +50,9 @@
                 // 遍历所有数据
                 let html = "";
                 result.data.forEach(item => {
-                    const content = JSON.parse(item.content); // 解析 JSONB
+                    const content = item.content; // ✅ 直接用，不再 JSON.parse
                     const formattedTime = new Intl.DateTimeFormat("zh-CN", {
-                        timeZone: "Asia/Tokyo", // 或 "Asia/Shanghai"
+                        timeZone: "Asia/Tokyo", // or Asia/Shanghai
                         year: "numeric",
                         month: "2-digit",
                         day: "2-digit",
