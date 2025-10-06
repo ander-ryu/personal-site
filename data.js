@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       .select("content")
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      // .single();
 
     if (error) throw error;
 
