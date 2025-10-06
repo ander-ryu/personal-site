@@ -1,55 +1,41 @@
-// ✅ /pages/display.js
-import { useEffect, useState } from 'react'
+// ✅ /pages/api/data.js
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+export default async function handler(req, res) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export default function DisplayPage() {
-  const [records, setRecords] = useState([])
-  const [loading, setLoading] = useState(true)
+  if (!url || !key) {
+    return res.status(500).json({
+      ok: false,
+      message: '❌ 环境变量未加载',
+      url: url || 'undefined',
+      key: key ? '存在' : 'undefined',
+    })
+  }
 
-  useEffect(() => {
-    async function fetchData() {
-      const { data, error } = await supabase
-        .from('personal-site-data')
-        .select('*')
-        .order('id', { ascending: true })
+  const supabase = createClient(url, key)
 
-      if (error) {
-        console.error('❌ 数据加载失败:', error)
-      } else {
-        console.log('✅ 数据加载成功:', data)
-        setRecords(data)
-      }
-      setLoading(false)
-    }
-    fetchData()
-  }, [])
+  const { data, error } = await supabase
+    .from('personal-site-data')
+    .select('*')
+    .order('id', { ascending: true })
+    .limit(1)
 
-  if (loading) return <p>加载中...</p>
+  if (error) return res.status(400).json({ ok: false, error: error.message })
 
-  if (!records.length) return <p>没有数据</p>
+  if (!data || !data.length)
+    return res.status(200).json({ title: '无标题', body: '无内容' })
 
-  return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-      <h1>网站内容</h1>
-      {records.map((item) => (
-        <div key={item.id} style={{ marginBottom: '20px' }}>
-          <h3>记录 #{item.id}</h3>
-          <p>
-            <b>创建时间：</b> {new Date(item.created_at).toLocaleString()}
-          </p>
-          <p>
-            <b>正文内容：</b>{' '}
-            {typeof item.content === 'string'
-              ? item.content
-              : item.content?.body || '无内容'}
-          </p>
-        </div>
-      ))}
-    </div>
-  )
+  let content = data[0].content
+  if (typeof content === 'string') {
+    try {
+      content = JSON.parse(content)
+    } catch {}
+  }
+
+  res.status(200).json({
+    title: '数据库内容',
+    body: content?.body || '无内容',
+  })
 }
