@@ -4,6 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <title>网站数据展示</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            padding: 20px;
+        }
+
+        .item {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        p {
+            color: #555;
+        }
+    </style>
 </head>
 
 <body>
@@ -17,15 +37,25 @@
                 console.log("API返回:", result);
 
                 if (result.ok && result.data.length > 0) {
-                    const item = result.data[0];
-                    const title = item.content?.title || "无标题";
-                    const body = item.content?.body || "无内容";
+                    // 循环生成所有记录
+                    let html = "";
+                    result.data.forEach(item => {
+                        const title = item.content?.title || "无标题";
+                        const body = item.content?.body || "无内容";
+                        const time = new Date(item.created_at).toLocaleString("zh-CN");
 
-                    let html = `<h2>${title}</h2>
-                      <p>${body}</p>`;
+                        html += `
+              <div class="item">
+                <h2>${title}</h2>
+                <p>${body}</p>
+                <small>创建时间：${time}</small>
+              </div>
+            `;
+                    });
+
                     document.getElementById("content").innerHTML = html;
                 } else {
-                    document.getElementById("content").innerHTML = "无可显示的数据";
+                    document.getElementById("content").innerHTML = "暂无数据";
                 }
             })
             .catch(err => {
