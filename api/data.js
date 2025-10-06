@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   const { data, error } = await supabase
     .from('personal_site_data')
     .select('*')
-    .limit(1)
+    .order('created_at', { ascending: false }); // ✅ 按时间倒序排列，显示全部
 
   if (error) {
     console.error('❌ Supabase 查询错误：', error)
