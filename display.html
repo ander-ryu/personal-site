@@ -13,17 +13,25 @@
     <script>
         fetch("/api/data")
             .then(res => res.json())
-            .then(data => {
-                console.log("API返回:", data); 
-                let html = `<h2>${data.title || "无标题"}</h2>
-                  <p>${data.body || "无内容"}</p>`;
-                document.getElementById("content").innerHTML = html;
+            .then(result => {
+                console.log("API返回:", result);
+
+                if (result.ok && result.data.length > 0) {
+                    const item = result.data[0];
+                    const title = item.content?.title || "无标题";
+                    const body = item.content?.body || "无内容";
+
+                    let html = `<h2>${title}</h2>
+                      <p>${body}</p>`;
+                    document.getElementById("content").innerHTML = html;
+                } else {
+                    document.getElementById("content").innerHTML = "无可显示的数据";
+                }
             })
             .catch(err => {
                 document.getElementById("content").innerText = "加载失败：" + err;
             });
     </script>
-
 
 </body>
 
