@@ -6,7 +6,8 @@
     <title>网站数据展示</title>
     <style>
         body {
-            font-family: "Microsoft Yahei", sans-serif;
+            font-family: Arial, sans-serif;
+            text-align: center;
             margin: 40px;
             line-height: 1.8;
         }
@@ -33,8 +34,8 @@
 </head>
 
 <body>
-    <h1>网站内容</h1>
-    <div id="content">加载中...</div>
+    <h1>内容随便显摆</h1>
+    <div id="content">你先等会...</div>
 
     <script>
         fetch("/api/data")
@@ -77,6 +78,7 @@
                 document.getElementById("content").innerText = "加载失败：" + err;
             });
     </script>
+    <script src="./top.js"></script>
 </body>
 
 </html>
