@@ -106,6 +106,8 @@
             const file = document.getElementById("fileInput").files[0];
             const mode = document.getElementById("mode").value;
             const status = document.getElementById("status");
+            const progressContainer = document.getElementById("progress-container");
+            const progressBar = document.getElementById("progress-bar");
 
             if (!file) return alert("请选择 Excel 文件！");
             if (!adminToken) return alert("请先输入后台密码！");
@@ -117,26 +119,53 @@
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 const rows = XLSX.utils.sheet_to_json(sheet);
 
+                // ✅ 显示进度条
+                progressContainer.style.display = "block";
+                progressBar.style.width = "0%";
+                progressBar.style.background = "#4CAF50";
                 status.textContent = "正在上传中...";
 
-                const res = await fetch("/api/upload", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${adminToken}` // ✅ 后端验证用
-                    },
-                    body: JSON.stringify({ mode, rows })
-                });
+                // 模拟上传进度（假装上传耗时）
+                let progress = 0;
+                const fakeProgress = setInterval(() => {
+                    if (progress < 90) {
+                        progress += 10;
+                        progressBar.style.width = progress + "%";
+                    }
+                }, 200);
 
-                const json = await res.json();
-                if (json.ok) {
-                    status.innerHTML = `✅ 上传成功！已${mode === 'overwrite' ? '覆盖' : '追加'} ${json.count} 条记录。`;
-                } else {
-                    status.innerHTML = `❌ 上传失败：${json.error}`;
+                try {
+                    const res = await fetch("/api/upload", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${adminToken}`
+                        },
+                        body: JSON.stringify({ mode, rows })
+                    });
+
+                    const json = await res.json();
+                    clearInterval(fakeProgress);
+                    progressBar.style.width = "100%";
+
+                    if (json.ok) {
+                        progressBar.style.background = "#28a745"; // ✅ 绿色成功
+                        status.innerHTML = `✅ 上传成功！已${mode === 'overwrite' ? '覆盖' : '追加'} ${json.count} 条记录。`;
+                    } else {
+                        progressBar.style.background = "#dc3545"; // ❌ 红色失败
+                        status.innerHTML = `❌ 上传失败：${json.error}`;
+                    }
+                } catch (err) {
+                    clearInterval(fakeProgress);
+                    progressBar.style.background = "#dc3545";
+                    progressBar.style.width = "100%";
+                    status.innerHTML = `❌ 出错：${err.message}`;
                 }
             };
+
             reader.readAsArrayBuffer(file);
         });
+
     </script>
 </body>
 
