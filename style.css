@@ -1,4 +1,9 @@
 /* === 全局基础样式 === */
+html {
+    overflow-y: scroll;
+    /* 始终显示纵向滚动条 */
+}
+
 body {
     font-family: Arial, sans-serif;
     text-align: center;
