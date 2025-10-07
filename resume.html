@@ -40,7 +40,7 @@
     const SUPABASE_URL = "https://你的项目ID.supabase.co";
     const SUPABASE_KEY = "你的 NEXT_PUBLIC_SUPABASE_ANON_KEY";
 
-    const supabase = window.Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const tbody = document.getElementById("resume-body");
     const loading = document.getElementById("loading");
