@@ -21,11 +21,12 @@
     <div id="upload-area" style="display: none;">
         <p>请选择导入模式：</p>
         <select id="mode">            
-            <option value="append">追加数据（保留旧的并新增）</option>
-            <option value="overwrite">覆盖数据（先删除所有再导入）</option>
+            <option value="append">追加数据（只添加已有非重复数据）</option>
+            <option value="overwrite">覆盖数据（清空已有数据后添加）</option>
         </select>
         <br><br>
         <input type="file" id="fileInput" accept=".xlsx">
+        <br>
         <button id="uploadBtn">开始上传 🚀</button>
 
         <p id="status"></p>
