@@ -110,7 +110,7 @@ tr:nth-child(even) {
 
 /* ✅ 进度条样式 */
 #progress-container {
-    width: 60%;
+    width: 25%;
     height: 20px;
     background: #ddd;
     border-radius: 10px;
