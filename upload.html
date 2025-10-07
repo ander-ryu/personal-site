@@ -19,12 +19,27 @@
         <a href="display.html">数据展示</a>
         <a href="upload.html">后台管理</a>
     </nav>
-    <p>请选择一个包含 <b>title</b> 和 <b>body</b> 两列的 Excel 文件：</p>
+    <p>请选择导入模式：</p>
+
+    <select id="mode">
+        <option value="append" selected>追加数据（保留原有内容）</option>
+        <option value="replace">覆盖数据（先删除所有再导入）</option>
+    </select>
+    <br><br>
+
     <input type="file" id="fileInput" accept=".xlsx" />
     <div id="status">等待上传...</div>
 
     <script>
         document.getElementById('fileInput').addEventListener('change', async (event) => {
+            const mode = document.getElementById('mode').value;
+
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode, rows })
+            });
+
             const file = event.target.files[0];
             if (!file) return;
             document.getElementById('status').innerText = "正在读取 Excel...";
