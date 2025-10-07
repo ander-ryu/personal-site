@@ -1,9 +1,10 @@
 // api/upload.js
 import { createClient } from "@supabase/supabase-js";
 
+// ✅ 初始化 Supabase
 const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,        // ✅ 用你现有的 URL 变量
-    process.env.SUPABASE_SERVICE_ROLE_KEY        // ✅ 用服务端专用的 service_role key
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export default async function handler(req, res) {
@@ -11,46 +12,62 @@ export default async function handler(req, res) {
         return res.status(405).json({ ok: false, error: "Method not allowed" });
     }
 
-    // 二次校验（Authorization 里带密码）
+    // ✅ 二次验证后台密码
     const auth = (req.headers.authorization || "").replace("Bearer ", "").trim();
     const correct = process.env.ADMIN_TOKEN || "";
     if (!auth || auth !== correct) {
         return res.status(403).json({ ok: false, error: "Unauthorized" });
     }
 
-    const { mode, rows } = req.body || {};
-    if (!Array.isArray(rows)) {
-        return res.status(400).json({ ok: false, error: "Invalid rows" });
+    // ✅ 解析请求体
+    const { table, mode, rows } = req.body || {};
+    if (!table || !Array.isArray(rows)) {
+        return res.status(400).json({ ok: false, error: "Invalid request body" });
     }
 
     try {
+        // ✅ 1️⃣ 覆盖模式：先清空表
         if (mode === "overwrite") {
-            await supabase.from("personal_site_data").delete().neq("id", 0);
+            await supabase.from(table).delete().neq("id", 0);
         }
 
-        // 先获取已有数据的 title 列
-        const { data: existing } = await supabase
-            .from("personal_site_data")
-            .select("content->>title");
+        // ✅ 2️⃣ 获取现有数据（根据表结构不同区分）
+        let existingKeys = new Set();
 
-        const existingTitles = new Set(existing?.map(e => e.title) || []);
+        if (mode === "append") {
+            // 不同表使用不同字段作为“唯一标识”
+            let keyField = null;
 
-        const toInsert = rows
-            .filter(r => !existingTitles.has(r.title)) // ✅ 去重逻辑
-            .map(r => ({
-                content: { title: r.title ?? "", body: r.body ?? "" },
-                created_at: new Date().toISOString(),
-            }));
+            if (table === "resume_data") keyField = "experience";
+            else if (table === "project_data") keyField = "title";
+            else if (table === "hobby_data") keyField = "hobby";
+            else if (table === "contact_data") keyField = "email";
+            else if (table === "news_data") keyField = "title";
+            else keyField = null;
+
+            if (keyField) {
+                const { data: existing } = await supabase.from(table).select(keyField);
+                existingKeys = new Set(existing?.map(e => e[keyField]) || []);
+            }
+        }
+
+        // ✅ 3️⃣ 去重处理
+        const toInsert = rows.filter(r => {
+            const key = r.title || r.experience || r.hobby || r.email || "";
+            return !existingKeys.has(key);
+        });
 
         if (toInsert.length === 0) {
             return res.json({ ok: true, message: "无新数据", count: 0 });
         }
 
-        const { error } = await supabase.from("personal_site_data").insert(toInsert);
+        // ✅ 4️⃣ 插入数据
+        const { error } = await supabase.from(table).insert(toInsert);
         if (error) throw error;
 
         res.json({ ok: true, count: toInsert.length });
     } catch (e) {
-        res.status(500).json({ ok: false, error: String(e.message || e) });
+        console.error(e);
+        res.status(500).json({ ok: false, error: e.message || String(e) });
     }
 }
