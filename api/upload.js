@@ -1,35 +1,38 @@
 import { createClient } from '@supabase/supabase-js';
+import { parseISO } from 'date-fns';
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY; // ✅ 服务密钥
-const supabase = createClient(url, key);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ ok: false, error: 'Method not allowed' });
+    // ✅ 后端安全验证
+    const authHeader = req.headers.authorization || "";
+    const token = authHeader.replace("Bearer ", "").trim();
+    const correctToken = process.env.ADMIN_TOKEN; // 从环境变量读取
+
+    if (token !== correctToken) {
+        return res.status(403).json({ ok: false, error: "无权访问：Token错误" });
     }
 
     const { mode, rows } = req.body;
-    if (!Array.isArray(rows) || rows.length === 0) {
-        return res.status(400).json({ ok: false, error: 'Excel 内容为空或格式错误' });
+    if (!rows || !Array.isArray(rows)) {
+        return res.status(400).json({ ok: false, error: "无效数据" });
     }
 
-    // ✅ 如果选择了“覆盖模式”
-    if (mode === 'replace') {
-        const { error: delError } = await supabase.from('personal_site_data').delete().neq('id', 0);
-        if (delError) return res.status(500).json({ ok: false, error: '删除旧数据失败: ' + delError.message });
+    try {
+        if (mode === "overwrite") {
+            await supabase.from("personal_site_data").delete().neq("id", 0);
+        }
+
+        const toInsert = rows.map(r => ({
+            content: { title: r.title, body: r.body },
+            created_at: new Date().toISOString()
+        }));
+
+        const { error } = await supabase.from("personal_site_data").insert(toInsert);
+        if (error) throw error;
+
+        res.json({ ok: true, count: rows.length });
+    } catch (e) {
+        res.status(500).json({ ok: false, error: e.message });
     }
-
-    const formatted = rows.map(r => ({
-        content: { title: r.title || '无标题', body: r.body || '无内容' }
-    }));
-
-    const { error } = await supabase.from('personal_site_data').insert(formatted);
-    if (error) return res.status(500).json({ ok: false, error: '插入数据失败: ' + error.message });
-
-    res.status(200).json({
-        ok: true,
-        message: mode === 'replace' ? '✅ 已覆盖旧数据并导入新Excel内容' : '✅ 已追加Excel内容',
-        count: formatted.length
-    });
 }
