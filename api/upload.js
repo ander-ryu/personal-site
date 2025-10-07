@@ -1,38 +1,43 @@
-import { createClient } from '@supabase/supabase-js';
-import { parseISO } from 'date-fns';
+// api/upload.js
+import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,        // ✅ 用你现有的 URL 变量
+  process.env.SUPABASE_SERVICE_ROLE_KEY        // ✅ 用服务端专用的 service_role key
+);
 
 export default async function handler(req, res) {
-    // ✅ 后端安全验证
-    const authHeader = req.headers.authorization || "";
-    const token = authHeader.replace("Bearer ", "").trim();
-    const correctToken = process.env.ADMIN_TOKEN; // 从环境变量读取
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, error: "Method not allowed" });
+  }
 
-    if (token !== correctToken) {
-        return res.status(403).json({ ok: false, error: "无权访问：Token错误" });
+  // 二次校验（Authorization 里带密码）
+  const auth = (req.headers.authorization || "").replace("Bearer ", "").trim();
+  const correct = process.env.ADMIN_TOKEN || "";
+  if (!auth || auth !== correct) {
+    return res.status(403).json({ ok: false, error: "Unauthorized" });
+  }
+
+  const { mode, rows } = req.body || {};
+  if (!Array.isArray(rows)) {
+    return res.status(400).json({ ok: false, error: "Invalid rows" });
+  }
+
+  try {
+    if (mode === "overwrite") {
+      await supabase.from("personal_site_data").delete().neq("id", 0);
     }
 
-    const { mode, rows } = req.body;
-    if (!rows || !Array.isArray(rows)) {
-        return res.status(400).json({ ok: false, error: "无效数据" });
-    }
+    const toInsert = rows.map(r => ({
+      content: { title: r.title ?? "", body: r.body ?? "" },
+      created_at: new Date().toISOString()
+    }));
 
-    try {
-        if (mode === "overwrite") {
-            await supabase.from("personal_site_data").delete().neq("id", 0);
-        }
+    const { error } = await supabase.from("personal_site_data").insert(toInsert);
+    if (error) throw error;
 
-        const toInsert = rows.map(r => ({
-            content: { title: r.title, body: r.body },
-            created_at: new Date().toISOString()
-        }));
-
-        const { error } = await supabase.from("personal_site_data").insert(toInsert);
-        if (error) throw error;
-
-        res.json({ ok: true, count: rows.length });
-    } catch (e) {
-        res.status(500).json({ ok: false, error: e.message });
-    }
+    res.json({ ok: true, count: toInsert.length });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
 }
