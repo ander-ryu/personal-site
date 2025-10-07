@@ -18,16 +18,18 @@
         <a href="/display.html">数据展示</a>
         <a href="/upload.html">后台管理</a>
     </nav>
-    <p>请选择导入模式：</p>
-    <select id="mode">
-        <option value="overwrite">覆盖数据（先删除所有再导入）</option>
-        <option value="append">追加数据（保留旧的并新增）</option>
-    </select>
-    <br><br>
-    <input type="file" id="fileInput" accept=".xlsx">
-    <button id="uploadBtn">开始上传 🚀</button>
+    <div id="upload-area" style="display: none;">
+        <p>请选择导入模式：</p>
+        <select id="mode">
+            <option value="overwrite">覆盖数据（先删除所有再导入）</option>
+            <option value="append">追加数据（保留旧的并新增）</option>
+        </select>
+        <br><br>
+        <input type="file" id="fileInput" accept=".xlsx">
+        <button id="uploadBtn">开始上传 🚀</button>
 
-    <p id="status"></p>
+        <p id="status"></p>
+    </div>
 
     <!-- ✅ 登录框 -->
     <div id="login-box" style="
@@ -70,15 +72,30 @@
         let adminToken = null;
 
         // 验证密码
-        function checkPassword() {
+        async function checkPassword() {
             const input = document.getElementById("password-input").value;
             if (!input) {
                 alert("请输入密码！");
                 return;
             }
-            adminToken = input;
-            document.getElementById("login-box").style.display = "none";
+
+            // 调用后端验证
+            const res = await fetch("/api/auth", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: input })
+            });
+            const json = await res.json();
+
+            if (json.ok) {
+                adminToken = input; // 记录在内存
+                document.getElementById("login-box").style.display = "none";
+                document.getElementById("upload-area").style.display = "block"; // ✅ 显示上传区域
+            } else {
+                alert("密码错误！");
+            }
         }
+
 
         document.getElementById("uploadBtn").addEventListener("click", async () => {
             const file = document.getElementById("fileInput").files[0];
