@@ -32,10 +32,12 @@
     <tbody></tbody>
   </table>
 
+  <p id="loading">正在加载中...</p>
+
   <script>
-    const SUPABASE_URL = "https://YOUR-PROJECT-ID.supabase.co";
-    const SUPABASE_KEY = "YOUR_ANON_KEY"; // ⚠️ 使用匿名 Key
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const SUPABASE_URL = window.env?.NEXT_PUBLIC_SUPABASE_URL || "https://你的项目ID.supabase.co";
+    const SUPABASE_KEY = window.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY || "你的 anon 公钥";
+    const supabase = window.Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function loadResume() {
       const { data, error } = await supabase
@@ -61,6 +63,7 @@
           <td>${row.note || "-"}</td>
         `;
         tbody.appendChild(tr);
+
       });
     }
 
