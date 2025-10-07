@@ -3,37 +3,63 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>上传Excel</title>
+    <title>上传 Excel 到网站</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input {
+            margin-top: 10px;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>上传新的 Excel 文件</h1>
-    <input type="file" id="fileInput" />
-    <button id="uploadBtn">上传</button>
-    <p id="status"></p>
+    <h1>📤 上传 Excel 更新网站内容</h1>
+    <p>请选择一个包含 <b>title</b> 和 <b>body</b> 两列的 Excel 文件：</p>
+    <input type="file" id="fileInput" accept=".xlsx" />
+    <div id="status">等待上传...</div>
 
     <script>
-        document.getElementById("uploadBtn").addEventListener("click", async () => {
-            const fileInput = document.getElementById("fileInput");
-            if (!fileInput.files.length) {
-                alert("请选择一个 Excel 文件");
-                return;
-            }
+        document.getElementById('fileInput').addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            document.getElementById('status').innerText = "正在读取 Excel...";
 
-            const formData = new FormData();
-            formData.append("file", fileInput.files[0]);
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet);
 
-            try {
-                const res = await fetch("/api/upload", {
-                    method: "POST",
-                    body: fileInput.files[0], // 直接传文件
+                console.log("Excel内容:", rows);
+                document.getElementById('status').innerText = "正在上传到 Supabase...";
+
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(rows)
                 });
 
                 const result = await res.json();
-                document.getElementById("status").innerText = result.message || result.error;
-            } catch (err) {
-                document.getElementById("status").innerText = "上传失败：" + err;
-            }
+                document.getElementById('status').innerText =
+                    result.ok ? "✅ 上传成功！刷新网站即可查看最新内容。" : "❌ 上传失败：" + result.error;
+            };
+            reader.readAsArrayBuffer(file);
         });
     </script>
 </body>
