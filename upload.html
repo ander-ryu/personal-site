@@ -1,84 +1,103 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
-  <meta charset="UTF-8">
-  <title>上传 Excel 更新网站</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <meta charset="UTF-8">
+    <title>上传 Excel 更新网站</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+        // === ✅ 简易后台密码验证 ===
+        document.addEventListener("DOMContentLoaded", () => {
+            const saved = localStorage.getItem("admin");
+            const correctPassword = "9527"; // 🔒 在这里设置你的网站后台密码
+
+            if (saved === "true") return; // 已登录过，不再验证
+
+            const input = prompt("请输入后台管理密码：");
+            if (input !== correctPassword) {
+                alert("❌ 密码错误，无法访问后台！");
+                window.location.href = "/"; // 返回首页
+            } else {
+                localStorage.setItem("admin_authenticated", "true"); // 记录一次登录
+                alert("✅ 欢迎回来，管理员！");
+            }
+        });
+    </script>
 </head>
 
 <body>
-  <nav>
-    <a href="index.html">网站首页</a>
-    <a href="resume.html">个人履历</a>
-    <a href="projects.html">过去项目</a>
-    <a href="hobby.html">未来兴趣</a>
-    <a href="contact.html">联系方式</a>
-    <a href="display.html">数据展示</a>
-    <a href="upload.html"><b>后台管理</b></a>
-  </nav>
+    <nav>
+        <a href="index.html">网站首页</a>
+        <a href="resume.html">个人履历</a>
+        <a href="projects.html">过去项目</a>
+        <a href="hobby.html">未来兴趣</a>
+        <a href="contact.html">联系方式</a>
+        <a href="display.html">数据展示</a>
+        <a href="upload.html"><b>后台管理</b></a>
+    </nav>
 
-  <h1>📤 上传 Excel 更新网站</h1>
+    <h1>📤 上传 Excel 更新网站</h1>
 
-  <p>请选择导入模式：</p>
-  <select id="mode">
-    <option value="append">追加数据（保留原有内容）</option>
-    <option value="replace">覆盖数据（先删除所有再导入）</option>
-  </select>
+    <p>请选择导入模式：</p>
+    <select id="mode">
+        <option value="append">追加数据（保留原有内容）</option>
+        <option value="replace">覆盖数据（先删除所有再导入）</option>
+    </select>
 
-  <br><br>
-  <input type="file" id="fileInput" accept=".xlsx" />
-  <br><br>
-  <button id="uploadBtn">开始上传 🚀</button>
+    <br><br>
+    <input type="file" id="fileInput" accept=".xlsx" />
+    <br><br>
+    <button id="uploadBtn">开始上传 🚀</button>
 
-  <p id="status">等待上传...</p>
+    <p id="status">等待上传...</p>
 
-  <script>
-    const fileInput = document.getElementById('fileInput');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const status = document.getElementById('status');
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const status = document.getElementById('status');
 
-    uploadBtn.addEventListener('click', async () => {
-      const file = fileInput.files[0];
-      if (!file) {
-        status.textContent = "⚠️ 请先选择一个 Excel 文件";
-        return;
-      }
+        uploadBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                status.textContent = "⚠️ 请先选择一个 Excel 文件";
+                return;
+            }
 
-      status.textContent = "⏳ 正在读取文件...";
-      const mode = document.getElementById('mode').value;
+            status.textContent = "⏳ 正在读取文件...";
+            const mode = document.getElementById('mode').value;
 
-      try {
-        // 使用 FileReader 读取 Excel
-        const data = await file.arrayBuffer();
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet);
+            try {
+                const data = await file.arrayBuffer();
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet);
 
-        if (rows.length === 0) {
-          status.textContent = "❌ Excel 文件为空";
-          return;
-        }
+                if (rows.length === 0) {
+                    status.textContent = "❌ Excel 文件为空";
+                    return;
+                }
 
-        status.textContent = "📡 正在上传到服务器...";
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode, rows })
+                status.textContent = "📡 正在上传到服务器...";
+                const res = await fetch("/api/upload", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ mode, rows })
+                });
+
+                const result = await res.json();
+                if (result.ok) {
+                    status.innerHTML = `✅ 上传成功！ ${result.message}（共 ${result.count} 条记录）`;
+                } else {
+                    status.textContent = `❌ 上传失败：${result.error || "未知错误"}`;
+                }
+
+            } catch (err) {
+                console.error(err);
+                status.textContent = "❌ 上传出错：" + err.message;
+            }
         });
-
-        const result = await res.json();
-        if (result.ok) {
-          status.textContent = `✅ 上传成功！${result.message}（共 ${result.count} 条记录）`;
-        } else {
-          status.textContent = `❌ 上传失败：${result.error || "未知错误"}`;
-        }
-
-      } catch (err) {
-        console.error(err);
-        status.textContent = "❌ 上传出错：" + err.message;
-      }
-    });
-  </script>
+    </script>
 </body>
+
 </html>
