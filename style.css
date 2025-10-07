@@ -67,6 +67,20 @@ img {
     /* ✅ 居中显示 */
 }
 
+video {
+    border-radius: 10px;
+    /* ✅ 圆角半径 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* ✅ 柔和阴影 */
+    display: block;
+    margin: 20px auto;
+    max-width: 90%;
+    /* ✅ 响应式缩放 */
+    height: auto;
+    overflow: hidden;
+    /* ✅ 关键！隐藏圆角外溢部分 */
+}
+
 /* === 表格样式（resume页用） === */
 table {
     width: 80%;
