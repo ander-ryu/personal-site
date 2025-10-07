@@ -1,6 +1,7 @@
 /* === 全局基础样式 === */
 body {
     font-family: Arial, sans-serif;
+    text-align: center;
     background: #f8f9fa;
     color: #333;
     margin: 40px;
