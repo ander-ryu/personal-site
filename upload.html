@@ -5,6 +5,30 @@
     <meta charset="UTF-8">
     <title>上传 Excel 更新网站</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        #progress-container {
+            width: 100%;
+            max-width: 400px;
+            height: 15px;
+            background: #ddd;
+            border-radius: 10px;
+            margin: 10px auto;
+            overflow: hidden;
+            display: none;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #4CAF50;
+            transition: width 0.3s ease;
+        }
+
+        .upload-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
 </head>
 
 <body>
@@ -18,19 +42,30 @@
         <a href="/display.html">数据展示</a>
         <a href="/upload.html">后台管理</a>
     </nav>
-    <div class="upload-container">
+
+    <div class="upload-container" id="upload-area" style="display:none;">
+        <p>请选择目标数据库表：</p>
+        <select id="tableSelect">
+            <option value="resume_data">个人履历（resume_data）</option>
+            <option value="project_data">过去项目（project_data）</option>
+            <option value="hobby_data">未来兴趣（hobby_data）</option>
+            <option value="contact_data">联系方式（contact_data）</option>
+            <option value="news_data">最新动态（news_data）</option>
+        </select>
+        <br><br>
+
         <p>请选择导入模式：</p>
         <select id="mode">
-            <option value="append">追加数据（只添加已有非重复数据）</option>
+            <option value="append">追加数据（只添加非重复数据）</option>
             <option value="overwrite">覆盖数据（先删除所有再导入）</option>
         </select>
         <br><br>
+
         <input type="file" id="fileInput" accept=".xlsx">
         <br><br>
         <button id="uploadBtn">开始上传 🚀</button>
         <p id="status"></p>
 
-        <!-- ✅ 进度条 -->
         <div id="progress-container">
             <div id="progress-bar"></div>
         </div>
@@ -38,37 +73,28 @@
 
     <!-- ✅ 登录框 -->
     <div id="login-box" style="
-    position: fixed; 
-    top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(0,0,0,0.6); 
-    display: flex; 
-    justify-content: center; 
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
     align-items: center;
-    z-index: 9999;
-  ">
+    z-index: 9999;">
         <div style="
-      background: white; 
-      padding: 30px; 
-      border-radius: 10px; 
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
       text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-    ">
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);">
             <h2>请输入后台管理密码</h2>
             <input type="password" id="password-input" placeholder="输入密码" style="
-        padding: 10px; 
-        width: 80%; 
-        font-size: 16px; 
-        border-radius: 5px; 
-        border: 1px solid #ccc;
-      "><br><br>
+        padding: 10px; width: 80%; font-size: 16px;
+        border-radius: 5px; border: 1px solid #ccc;"><br><br>
             <button onclick="checkPassword()" style="
-        padding: 10px 20px; 
-        background: #4CAF50; 
-        color: white; 
-        border: none; 
-        border-radius: 5px; 
-        cursor: pointer;
-      ">确认</button>
+        padding: 10px 20px; background: #4CAF50; color: white;
+        border: none; border-radius: 5px; cursor: pointer;">
+                确认
+            </button>
         </div>
     </div>
 
@@ -76,7 +102,7 @@
     <script>
         let adminToken = null;
 
-        // 验证密码
+        // ✅ 验证密码
         async function checkPassword() {
             const input = document.getElementById("password-input").value;
             if (!input) {
@@ -84,7 +110,6 @@
                 return;
             }
 
-            // 调用后端验证
             const res = await fetch("/api/auth", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -93,18 +118,19 @@
             const json = await res.json();
 
             if (json.ok) {
-                adminToken = input; // 记录在内存
+                adminToken = input;
                 document.getElementById("login-box").style.display = "none";
-                document.getElementById("upload-area").style.display = "block"; // ✅ 显示上传区域
+                document.getElementById("upload-area").style.display = "block";
             } else {
                 alert("密码错误！");
             }
         }
 
-
+        // ✅ 上传按钮逻辑
         document.getElementById("uploadBtn").addEventListener("click", async () => {
             const file = document.getElementById("fileInput").files[0];
             const mode = document.getElementById("mode").value;
+            const table = document.getElementById("tableSelect").value;
             const status = document.getElementById("status");
             const progressContainer = document.getElementById("progress-container");
             const progressBar = document.getElementById("progress-bar");
@@ -119,13 +145,10 @@
                 const sheet = workbook.Sheets[workbook.SheetNames[0]];
                 const rows = XLSX.utils.sheet_to_json(sheet);
 
-                // ✅ 显示进度条
                 progressContainer.style.display = "block";
                 progressBar.style.width = "0%";
-                progressBar.style.background = "#4CAF50";
                 status.textContent = "正在上传中...";
 
-                // 模拟上传进度（假装上传耗时）
                 let progress = 0;
                 const fakeProgress = setInterval(() => {
                     if (progress < 90) {
@@ -141,7 +164,7 @@
                             "Content-Type": "application/json",
                             "Authorization": `Bearer ${adminToken}`
                         },
-                        body: JSON.stringify({ mode, rows })
+                        body: JSON.stringify({ table, mode, rows })
                     });
 
                     const json = await res.json();
@@ -149,10 +172,10 @@
                     progressBar.style.width = "100%";
 
                     if (json.ok) {
-                        progressBar.style.background = "#28a745"; // ✅ 绿色成功
-                        status.innerHTML = `✅ 上传成功！已${mode === 'overwrite' ? '覆盖' : '追加'} ${json.count} 条记录。`;
+                        progressBar.style.background = "#28a745";
+                        status.innerHTML = `✅ 上传成功！已将数据导入表 <b>${table}</b>，${mode === 'overwrite' ? '覆盖' : '追加'} ${json.count} 条记录。`;
                     } else {
-                        progressBar.style.background = "#dc3545"; // ❌ 红色失败
+                        progressBar.style.background = "#dc3545";
                         status.innerHTML = `❌ 上传失败：${json.error}`;
                     }
                 } catch (err) {
@@ -165,7 +188,6 @@
 
             reader.readAsArrayBuffer(file);
         });
-
     </script>
 </body>
 
