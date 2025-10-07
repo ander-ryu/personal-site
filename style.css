@@ -52,6 +52,21 @@ nav a:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
+img {
+    border-radius: 10px;
+    /* ✅ 圆角半径10像素 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* ✅ 可选：加一点柔和阴影更立体 */
+    max-width: 100%;
+    /* ✅ 确保响应式，不撑出容器 */
+    height: auto;
+    /* ✅ 按比例缩放 */
+    display: block;
+    /* ✅ 避免与文字对齐时出现空隙 */
+    margin: 0 auto;
+    /* ✅ 居中显示 */
+}
+
 /* === 表格样式（resume页用） === */
 table {
     width: 80%;
